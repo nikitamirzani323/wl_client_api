@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  whitelabel-client-api:
+    container_name: whitelabel-client-api
+    image: whitelabel-client-api:0.0.0.1
+    build: .
+    ports:
+      - 2014:2014
+    restart: always
