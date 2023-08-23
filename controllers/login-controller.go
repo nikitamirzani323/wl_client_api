@@ -39,8 +39,8 @@ func CheckLogin(c *fiber.Ctx) error {
 			"record":  errors,
 		})
 	}
-
-	result, idmaster, idmasteragen, idagenadmin, ruleadmin, tipeadmin, err := models.Login_Model(client.Username, client.Password, client.Ipaddress)
+	//idmasteragen, username, password, ipaddress, timezone string
+	result, idmasteragen, idmember, err := models.Login_Model(client.Idmasteragen, client.Username, client.Password, client.Ipaddress, client.Timezone)
 
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -59,7 +59,7 @@ func CheckLogin(c *fiber.Ctx) error {
 			})
 
 	} else {
-		dataclient := idmaster + "==" + idmasteragen + "==" + idagenadmin + "==" + ruleadmin + "==" + tipeadmin
+		dataclient := idmasteragen + "==" + idmember
 		dataclient_encr, keymap := helpers.Encryption(dataclient)
 		dataclient_encr_final := dataclient_encr + "|" + strconv.Itoa(keymap)
 		t, err := helpers.GenerateNewAccessToken(dataclient_encr_final)
@@ -89,39 +89,18 @@ func Home(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmaster, client_idmasteragen, client_idagenadmin, idruleadmin, tipeadmin := helpers.Parsing_Decry(temp_decp, "==")
-	fmt.Println("IDMASTER:", client_idmaster)
+	fmt.Println("KEY:", temp_decp)
+
+	client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
 	fmt.Println("IDMASTER_AGEN:", client_idmasteragen)
-	fmt.Println("IDAGENADMIN:", client_idagenadmin)
-	fmt.Println("IDAGENADMINRULE:", idruleadmin)
-	fmt.Println("TIPE:", tipeadmin)
+	fmt.Println("IDMEMBER:", client_idmember)
 	fmt.Println(client.Page)
 
-	if tipeadmin == "ADMIN" {
-		ruleadmin := models.Get_AdminRule("ruleadmingroup", client_idmasteragen, idruleadmin)
-		flag := models.Get_listitemsearch(ruleadmin, ",", client.Page)
-		if !flag {
-			c.Status(fiber.StatusForbidden)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusForbidden,
-				"message": "Anda tidak bisa akses halaman ini",
-				"record":  nil,
-			})
-		} else {
-			c.Status(fiber.StatusOK)
-			return c.JSON(fiber.Map{
-				"status":  fiber.StatusOK,
-				"message": "ADMIN",
-				"record":  nil,
-			})
-		}
-	} else {
-		c.Status(fiber.StatusOK)
-		return c.JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": "ADMIN",
-			"record":  nil,
-		})
-	}
+	c.Status(fiber.StatusOK)
+	return c.JSON(fiber.Map{
+		"status":  fiber.StatusOK,
+		"message": "ADMIN",
+		"record":  nil,
+	})
 
 }

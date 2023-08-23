@@ -20,7 +20,7 @@ func Adminrulehome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	log.Println(client_idmasteragen)
 	var obj entities.Model_agenadminrule
 	var arraobj []entities.Model_agenadminrule
@@ -98,9 +98,9 @@ func AdminruleSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, client_idagenadmin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	//admin, idmasteragen, nmrule, rule, sData string, idrecord int
-	result, err := models.Save_adminrule(client_idagenadmin, client_idmasteragen,
+	result, err := models.Save_adminrule(client_idmasteragen, client_idmasteragen,
 		client.Agenadminrule_name, client.Agenadminrule_rule, client.Sdata, client.Agenadminrule_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)

@@ -22,7 +22,7 @@ func Memberhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_member
 	var arraobj []entities.Model_member
@@ -143,7 +143,7 @@ func Membersearch(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_membershare
 	var arraobj []entities.Model_membershare
@@ -227,11 +227,11 @@ func MemberSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmaster, client_idmasteragen, client_admin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	result, err := models.Save_member(
-		client_admin,
-		client_idmaster, client_idmasteragen, client.Member_username, client.Member_password,
+		client_idmasteragen,
+		client_idmasteragen, client_idmasteragen, client.Member_username, client.Member_password,
 		client.Member_name, client.Member_phone, client.Member_email, client.Member_status,
 		client.Sdata, client.Member_id)
 	if err != nil {
@@ -278,10 +278,10 @@ func MemberBankSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, client_admin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	//admin, idagenmember, idbanktype, norek, name, sData string, idrecord int
 	result, err := models.Save_memberbank(
-		client_admin,
+		client_idmasteragen,
 		client.Memberbank_idagenmember, client.Memberbank_idbanktype,
 		client.Memberbank_norek, client.Memberbank_nmownerbank,
 		client.Sdata)
@@ -329,7 +329,7 @@ func MemberBankDelete(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	//idagenmember string, idrecord int
 	result, err := models.Delete_memberbank(client.Memberbank_idagenmember, client.Memberbank_id)
 	if err != nil {

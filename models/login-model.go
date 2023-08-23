@@ -12,50 +12,50 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Login_Model(username, password, ipaddress string) (bool, string, string, string, string, string, error) {
+func Login_Model(idmasteragen, username, password, ipaddress, timezone string) (bool, string, string, error) {
 	con := db.CreateCon()
 	ctx := context.Background()
 	flag := false
 	tglnow, _ := goment.New()
-	var idagenadmin, idmasteragen, idmaster_DB, passwordDB, ruleDB, tipeDB string
+	var idagenmember_DB, password_agenmember_DB string
 	sql_select := `
 			SELECT
-			A.idagenadmin, A.idmasteragen, B.idmaster, A.passwordagen_admin, A.idagenadminrule, A.tipeagen_admin    
-			FROM ` + configs.DB_tbl_mst_master_agen_admin + ` as A 
-			JOIN ` + configs.DB_tbl_mst_master_agen + ` as B on B.idmasteragen = A.idmasteragen 
-			WHERE A.usernameagen_admin  = $1
-			AND A.statusagenadmin = 'Y' 
+			idagenmember, password_agenmember      
+			FROM ` + configs.DB_tbl_mst_master_agen_member + ` 
+			WHERE username_agenmember=$1 
+			AND idmasteragen=$2 
+			AND status_agenmember='Y'
 		`
 
-	row := con.QueryRowContext(ctx, sql_select, username)
-	switch e := row.Scan(&idagenadmin, &idmasteragen, &idmaster_DB, &passwordDB, &ruleDB, &tipeDB); e {
+	row := con.QueryRowContext(ctx, sql_select, username, idmasteragen)
+	switch e := row.Scan(&idagenmember_DB, &password_agenmember_DB); e {
 	case sql.ErrNoRows:
-		return false, "", "", "", "", "", errors.New("Username and Password Not Found")
+		return false, "", "", errors.New("Username and Password Not Found")
 	case nil:
 		flag = true
 	default:
-		return false, "", "", "", "", "", errors.New("Username and Password Not Found")
+		return false, "", "", errors.New("Username and Password Not Found")
 	}
 
 	hashpass := helpers.HashPasswordMD5(password)
 
-	if hashpass != passwordDB {
-		return false, "", "", "", "", "", nil
+	if hashpass != password_agenmember_DB {
+		return false, "", "", nil
 	}
 
 	if flag {
 
 		sql_update := `
-			UPDATE ` + configs.DB_tbl_mst_master_agen_admin + ` 
-			SET lastloginagen_admin=$1, ipaddress_admin=$2,  
-			updateagenadmin=$3,  updatedateagenadmin=$4   
-			WHERE idagenadmin  = $5 
-			AND usernameagen_admin  = $6  
-			AND statusagenadmin = 'Y' 
+			UPDATE ` + configs.DB_tbl_mst_master_agen_member + ` 
+			SET lastlogin_agenmember=$1, ipaddress_agenmember=$2, timezone_agenmember=$3,    
+			update_agenmember=$4,  updatedate_agenmember=$5    
+			WHERE idagenmember=$6  
+			AND idmasteragen=$7   
+			AND status_agenmember='Y' 
 		`
-		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_master_agen_admin, "UPDATE",
-			tglnow.Format("YYYY-MM-DD HH:mm:ss"), ipaddress, idagenadmin,
-			tglnow.Format("YYYY-MM-DD HH:mm:ss"), idagenadmin, username)
+		flag_update, msg_update := Exec_SQL(sql_update, configs.DB_tbl_mst_master_agen_member, "UPDATE",
+			tglnow.Format("YYYY-MM-DD HH:mm:ss"), ipaddress, timezone,
+			idagenmember_DB, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idagenmember_DB, idmasteragen)
 
 		if flag_update {
 			flag = true
@@ -64,5 +64,5 @@ func Login_Model(username, password, ipaddress string) (bool, string, string, st
 		}
 	}
 
-	return true, idmaster_DB, idmasteragen, idagenadmin, ruleDB, tipeDB, nil
+	return true, idmasteragen, idagenmember_DB, nil
 }

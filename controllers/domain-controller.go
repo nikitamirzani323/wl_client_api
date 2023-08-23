@@ -93,10 +93,10 @@ func DomainSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, _, client_admin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	result, err := models.Save_domain(
-		client_admin,
+		client_idmasteragen,
 		client.Domain_name, client.Domain_status, client.Sdata, client.Domain_id)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)

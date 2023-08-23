@@ -20,7 +20,7 @@ func Transdpwdhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_transdpwd
 	var arraobj []entities.Model_transdpwd
@@ -132,12 +132,12 @@ func TransdpwdSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmaster, client_idmasteragen, client_admin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	// admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, note_dpwd, status, sData string, bank_in, bank_out int, amount float32
 	result, err := models.Save_transdpwd(
-		client_admin,
-		client.Transdpwd_id, client_idmasteragen, client_idmaster, client.Transdpwd_tipedoc, client.Transdpwd_idmember,
+		client_idmasteragen,
+		client.Transdpwd_id, client_idmasteragen, client_idmasteragen, client.Transdpwd_tipedoc, client.Transdpwd_idmember,
 		client.Transdpwd_note, client.Transdpwd_status,
 		client.Sdata, client.Transdpwd_bank_in, client.Transdpwd_bank_out, client.Transdpwd_amount)
 	if err != nil {

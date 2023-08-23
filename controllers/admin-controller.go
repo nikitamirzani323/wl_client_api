@@ -21,7 +21,7 @@ func Adminhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, _, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_admin
 	var arraobj []entities.Model_admin
@@ -129,10 +129,10 @@ func AdminSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	_, client_idmasteragen, client_admin, _, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	result, err := models.Save_adminHome(
-		client_admin,
+		client_idmasteragen,
 		client.Admin_id, client_idmasteragen, client.Admin_username, client.Admin_password,
 		client.Admin_nama, client.Admin_phone1, client.Admin_phone2, client.Admin_status,
 		client.Sdata, client.Admin_idrule)
