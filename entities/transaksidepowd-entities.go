@@ -19,10 +19,9 @@ type Model_transdpwd struct {
 type Controller_transdpwdsave struct {
 	Page                string  `json:"page" validate:"required"`
 	Sdata               string  `json:"sdata" validate:"required"`
-	Transdpwd_id        string  `json:"transdpwd_id"`
 	Transdpwd_tipedoc   string  `json:"transdpwd_tipedoc" validate:"required"`
 	Transdpwd_bank_in   int     `json:"transdpwd_bank_in" validate:"required"`
-	Transdpwd_bank_out  int     `json:"transdpwd_bank_out" validate:"required"`
+	Transdpwd_bank_out  int     `json:"transdpwd_bank_out" `
 	Transdpwd_amount    float32 `json:"transdpwd_amount" validate:"required"`
 	Transdpwd_ipaddress string  `json:"transdpwd_ipaddress"`
 	Transdpwd_timezone  string  `json:"transdpwd_timezone"`

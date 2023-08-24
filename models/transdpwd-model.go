@@ -150,7 +150,7 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 
 	return res, nil
 }
-func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, note, ipaddress, timezone, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
+func Save_transdpwd(idmember, idmasteragen, idmaster, tipedoc, note, ipaddress, timezone, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()

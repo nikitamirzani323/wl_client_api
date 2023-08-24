@@ -154,8 +154,7 @@ func TransdpwdSave(c *fiber.Ctx) error {
 
 	// idmember, idrecord, idmasteragen, idmaster, tipedoc, note, ipaddress, timezone, sData string, bank_in, bank_out int, amount float32
 	result, err := models.Save_transdpwd(
-		client_idmember,
-		client.Transdpwd_id, client_idmasteragen, client_idmaster, client.Transdpwd_tipedoc,
+		client_idmember, client_idmasteragen, client_idmaster, client.Transdpwd_tipedoc,
 		client.Transdpwd_note, client.Transdpwd_ipaddress, client.Transdpwd_timezone,
 		client.Sdata, client.Transdpwd_bank_in, client.Transdpwd_bank_out, client.Transdpwd_amount)
 	if err != nil {
