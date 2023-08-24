@@ -1,4 +1,4 @@
-PORT=2013
+PORT=2014
 # POSTGRES settings:
 DB_USER="admindb"
 DB_PASS="asd123QWE"
