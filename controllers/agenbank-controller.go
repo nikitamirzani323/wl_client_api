@@ -21,7 +21,7 @@ func Agenbankhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_agenbank
 	var arraobj []entities.Model_agenbank
@@ -91,7 +91,7 @@ func Agenbanklist(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_agenbankshare
 	var arraobj []entities.Model_agenbankshare
@@ -163,7 +163,7 @@ func AgenbankSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	// admin, idmasteragen, tipe, idbank, norek, nmrek, status, sData string, idrecord int
 	result, err := models.Save_agenbank(

@@ -43,12 +43,13 @@ type ResponseAdmin struct {
 	Listrule interface{} `json:"listruleadmin"`
 	Time     string      `json:"time"`
 }
-type ResponseEmployee struct {
-	Status          int         `json:"status"`
-	Message         string      `json:"message"`
-	Record          interface{} `json:"record"`
-	Listdepartement interface{} `json:"listdepartement"`
-	Time            string      `json:"time"`
+type ResponseTransaksi struct {
+	Status         int         `json:"status"`
+	Message        string      `json:"message"`
+	Record         interface{} `json:"record"`
+	Listbankmember interface{} `json:"listbankmember"`
+	Listbankagen   interface{} `json:"listbankagen"`
+	Time           string      `json:"time"`
 }
 type ErrorResponse struct {
 	Field string

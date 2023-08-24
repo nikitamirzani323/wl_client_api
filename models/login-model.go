@@ -12,35 +12,36 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Login_Model(idmasteragen, username, password, ipaddress, timezone string) (bool, string, string, error) {
+func Login_Model(idmasteragen, username, password, ipaddress, timezone string) (bool, string, string, string, error) {
 	con := db.CreateCon()
 	ctx := context.Background()
 	flag := false
 	tglnow, _ := goment.New()
-	var idagenmember_DB, password_agenmember_DB string
+	var idmaster_db, idagenmember_DB, password_agenmember_DB string
 	sql_select := `
 			SELECT
-			idagenmember, password_agenmember      
-			FROM ` + configs.DB_tbl_mst_master_agen_member + ` 
-			WHERE username_agenmember=$1 
-			AND idmasteragen=$2 
-			AND status_agenmember='Y'
+			A.idagenmember, B.idmaster, A.password_agenmember      
+			FROM ` + configs.DB_tbl_mst_master_agen_member + ` as A 
+			JOIN ` + configs.DB_tbl_mst_master_agen + ` as B ON B.idmasteragen = A.idmasteragen  
+			WHERE A.username_agenmember=$1 
+			AND A.idmasteragen=$2 
+			AND A.status_agenmember='Y'
 		`
 
 	row := con.QueryRowContext(ctx, sql_select, username, idmasteragen)
-	switch e := row.Scan(&idagenmember_DB, &password_agenmember_DB); e {
+	switch e := row.Scan(&idmaster_db, &idagenmember_DB, &password_agenmember_DB); e {
 	case sql.ErrNoRows:
-		return false, "", "", errors.New("Username and Password Not Found")
+		return false, "", "", "", errors.New("Username and Password Not Found")
 	case nil:
 		flag = true
 	default:
-		return false, "", "", errors.New("Username and Password Not Found")
+		return false, "", "", "", errors.New("Username and Password Not Found")
 	}
 
 	hashpass := helpers.HashPasswordMD5(password)
 
 	if hashpass != password_agenmember_DB {
-		return false, "", "", nil
+		return false, "", "", "", nil
 	}
 
 	if flag {
@@ -64,5 +65,5 @@ func Login_Model(idmasteragen, username, password, ipaddress, timezone string) (
 		}
 	}
 
-	return true, idmasteragen, idagenmember_DB, nil
+	return true, idmaster_db, idmasteragen, idagenmember_DB, nil
 }

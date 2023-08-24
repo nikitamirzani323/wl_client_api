@@ -105,7 +105,7 @@ func ProviderSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	result, err := models.Save_provider(
 		client_idmasteragen,

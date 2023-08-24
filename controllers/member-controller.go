@@ -22,7 +22,7 @@ func Memberhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_member
 	var arraobj []entities.Model_member
@@ -143,7 +143,7 @@ func Membersearch(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_membershare
 	var arraobj []entities.Model_membershare
@@ -227,7 +227,7 @@ func MemberSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	result, err := models.Save_member(
 		client_idmasteragen,
@@ -278,7 +278,7 @@ func MemberBankSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	//admin, idagenmember, idbanktype, norek, name, sData string, idrecord int
 	result, err := models.Save_memberbank(
 		client_idmasteragen,
@@ -329,7 +329,7 @@ func MemberBankDelete(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 	//idagenmember string, idrecord int
 	result, err := models.Delete_memberbank(client.Memberbank_idagenmember, client.Memberbank_id)
 	if err != nil {

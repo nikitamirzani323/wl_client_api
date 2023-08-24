@@ -118,7 +118,7 @@ func CateBankSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	// admin, name, status, sData string, idrecord int
 	result, err := models.Save_catebank(
@@ -168,7 +168,7 @@ func BankTypeSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
 
 	// admin, idrecord, name, img, status, sData string, idcatebank int
 	result, err := models.Save_banktype(

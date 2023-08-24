@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -16,10 +15,10 @@ import (
 	"github.com/nleeper/goment"
 )
 
-func Fetch_transdpwdHome(idmasteragen string) (helpers.Response, error) {
+func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransaksi, error) {
 	var obj entities.Model_transdpwd
 	var arraobj []entities.Model_transdpwd
-	var res helpers.Response
+	var res helpers.ResponseTransaksi
 	msg := "Data Not Found"
 	con := db.CreateCon()
 	ctx := context.Background()
@@ -28,29 +27,30 @@ func Fetch_transdpwdHome(idmasteragen string) (helpers.Response, error) {
 	tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
 	sql_select := `SELECT 
 			iddpwd , date_dpwd, idcurr,  
-			tipedocuser_dpwd, tipedoc_dpwd , tipeakun_dpwd, idagenmember,  ipaddress_dpwd, timezone_dpwd,  
+			tipedoc_dpwd ,  
 			bank_in, bank_in_info , bank_out, bank_out_info, 
-			round(amount_dpwd*multiplier_dpwd) as amount_dpwd , before_dpwd, after_dpwd,  status_dpwd,
+			round(amount_dpwd*multiplier_dpwd) as amount_dpwd , status_dpwd,
 			create_dpwd, to_char(COALESCE(createdate_dpwd,now()), 'YYYY-MM-DD HH24:MI:SS'), 
 			update_dpwd, to_char(COALESCE(updatedate_dpwd,now()), 'YYYY-MM-DD HH24:MI:SS') 
 			FROM ` + tbl_trx_dpwd + `  
-			ORDER BY createdate_dpwd DESC   `
+			WHERE idmasteragen=$1 
+			AND idagenmember=$2 
+			ORDER BY createdate_dpwd DESC  LIMIT 100 `
 
 	row, err := con.QueryContext(ctx, sql_select)
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
-			iddpwd_db, date_dpwd_db, idcurr_db                                                                                                                              string
-			tipedocuser_dpwd_db, tipedoc_dpwd_db, tipeakun_dpwd_db, idagenmember_db, ipaddress_dpwd_db, timezone_dpwd_db, bank_in_info_db, bank_out_info_db, status_dpwd_db string
-			bank_in_db, bank_out_db                                                                                                                                         int
-			amount_dpwd_db, before_dpwd_db, after_dpwd_db                                                                                                                   float64
-			create_dpwd_db, createdate_dpwd_db, update_dpwd_db, updatedate_dpwd_db                                                                                          string
+			iddpwd_db, date_dpwd_db, idcurr_db                                     string
+			tipedoc_dpwd_db, bank_in_info_db, bank_out_info_db, status_dpwd_db     string
+			bank_in_db, bank_out_db                                                int
+			amount_dpwd_db                                                         float64
+			create_dpwd_db, createdate_dpwd_db, update_dpwd_db, updatedate_dpwd_db string
 		)
 
 		err = row.Scan(&iddpwd_db, &date_dpwd_db, &idcurr_db,
-			&tipedocuser_dpwd_db, &tipedoc_dpwd_db, &tipeakun_dpwd_db, &idagenmember_db, &ipaddress_dpwd_db, &timezone_dpwd_db,
-			&bank_in_db, &bank_in_info_db, &bank_out_db, &bank_out_info_db,
-			&amount_dpwd_db, &before_dpwd_db, &after_dpwd_db, &status_dpwd_db,
+			&tipedoc_dpwd_db, &bank_in_db, &bank_in_info_db, &bank_out_db, &bank_out_info_db,
+			&amount_dpwd_db, &status_dpwd_db,
 			&create_dpwd_db, &createdate_dpwd_db, &update_dpwd_db, &updatedate_dpwd_db)
 
 		helpers.ErrorCheck(err)
@@ -76,19 +76,11 @@ func Fetch_transdpwdHome(idmasteragen string) (helpers.Response, error) {
 		obj.Transdpwd_date = date_dpwd_db
 		obj.Transdpwd_idcurr = idcurr_db
 		obj.Transdpwd_tipedoc = tipedoc_dpwd_db
-		obj.Transdpwd_tipeuserdoc = tipedocuser_dpwd_db
-		obj.Transdpwd_tipeakun = tipeakun_dpwd_db
-		obj.Transdpwd_idmember = idagenmember_db
-		obj.Transdpwd_nmmember = _GetInfoMember(idmasteragen, idagenmember_db)
-		obj.Transdpwd_ipaddress = ipaddress_dpwd_db
-		obj.Transdpwd_timezone = timezone_dpwd_db
 		obj.Transdpwd_bank_in = bank_in_db
 		obj.Transdpwd_bank_in_info = bank_in_info_db
 		obj.Transdpwd_bank_out = bank_out_db
 		obj.Transdpwd_bank_out_info = bank_out_info_db
 		obj.Transdpwd_amount = amount_dpwd_db
-		obj.Transdpwd_before = before_dpwd_db
-		obj.Transdpwd_after = after_dpwd_db
 		obj.Transdpwd_status = status_dpwd_db
 		obj.Transdpwd_status_css = status_css
 		obj.Transdpwd_create = create
@@ -98,14 +90,64 @@ func Fetch_transdpwdHome(idmasteragen string) (helpers.Response, error) {
 	}
 	defer row.Close()
 
+	//BANK MEMBER
+	var objbank entities.Model_memberbank
+	var arraobjbank []entities.Model_memberbank
+	sql_selectbank := `SELECT 
+		idagenmemberbank,idbanktype, norekbank_agenmemberbank, nmownerbank_agenmemberbank 
+		FROM ` + configs.DB_tbl_mst_master_agen_member_bank + ` 
+		WHERE idagenmember = $1   
+	`
+	row_bank, err_bank := con.QueryContext(ctx, sql_selectbank, idmember)
+	helpers.ErrorCheck(err_bank)
+	for row_bank.Next() {
+		var (
+			idagenmemberbank_db                                                       int
+			idbanktype_db, norekbank_agenmemberbank_db, nmownerbank_agenmemberbank_db string
+		)
+		err_bank = row_bank.Scan(&idagenmemberbank_db, &idbanktype_db, &norekbank_agenmemberbank_db, &nmownerbank_agenmemberbank_db)
+
+		objbank.Memberbank_id = idagenmemberbank_db
+		objbank.Memberbank_idbanktype = idbanktype_db
+		objbank.Memberbank_nmownerbank = nmownerbank_agenmemberbank_db
+		objbank.Memberbank_norek = norekbank_agenmemberbank_db
+		arraobjbank = append(arraobjbank, objbank)
+	}
+	defer row_bank.Close()
+
+	//BANK AGEN
+	var objagenbank entities.Model_agenbankshare
+	var arraobjagenbank []entities.Model_agenbankshare
+	sql_selectbankagen := `SELECT 
+		idagenbank,idbanktype, norekbank, nmownerbank  
+		FROM ` + configs.DB_tbl_mst_master_agen_bank + ` 
+		WHERE idmasteragen = $1 AND status_agenbank='Y' 
+	`
+	row_agenbank, err_agenbank := con.QueryContext(ctx, sql_selectbankagen, idmasteragen)
+	helpers.ErrorCheck(err_agenbank)
+	for row_agenbank.Next() {
+		var (
+			idagenbank_db                               int
+			idbanktype_db, norekbank_db, nmownerbank_db string
+		)
+		err_agenbank = row_agenbank.Scan(&idagenbank_db, &idbanktype_db, &norekbank_db, &nmownerbank_db)
+
+		objagenbank.Agenbank_id = idagenbank_db
+		objagenbank.Agenbank_info = idbanktype_db + "-" + norekbank_db + "-" + nmownerbank_db
+		arraobjagenbank = append(arraobjagenbank, objagenbank)
+	}
+	defer row_agenbank.Close()
+
 	res.Status = fiber.StatusOK
 	res.Message = msg
 	res.Record = arraobj
+	res.Listbankmember = arraobjbank
+	res.Listbankagen = arraobjagenbank
 	res.Time = time.Since(start).String()
 
 	return res, nil
 }
-func Save_transdpwd(admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, note_dpwd, status, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
+func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -116,9 +158,7 @@ func Save_transdpwd(admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, 
 	multiplier := _GetMultiplier(idcurr)
 	before := 0
 	after := 0
-	log.Println(tbl_trx_dpwd)
-	log.Println(idcurr)
-	log.Println(multiplier)
+
 	if sData == "New" {
 		sql_insert := `
 				insert into
@@ -126,14 +166,14 @@ func Save_transdpwd(admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, 
 					iddpwd , idmasteragen, idmaster, 
 					yearmonth_dpwd , date_dpwd, idcurr, tipedocuser_dpwd, tipedoc_dpwd, tipeakun_dpwd, idagenmember, 
 					bank_in, bank_in_info , bank_out, bank_out_info, 
-					multiplier_dpwd, amountdefault_dpwd, amount_dpwd, before_dpwd, after_dpwd, status_dpwd, note_dpwd, 
+					multiplier_dpwd, amountdefault_dpwd, amount_dpwd, before_dpwd, after_dpwd, status_dpwd, 
 					create_dpwd, createdate_dpwd  
 				) values (
 					$1, $2, $3,   
 					$4, $5, $6, $7, $8, $9, $10,    
 					$11, $12, $13, $14,     
-					$15, $16, $17, $18, $19, $20, $21,      
-					$22, $23
+					$15, $16, $17, $18, $19, $20,       
+					$21, $22
 				)
 			`
 		tipeakun_dpwd := ""
@@ -148,11 +188,6 @@ func Save_transdpwd(admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, 
 			tipeakun_dpwd = "OUT"
 			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "AGEN", bank_out)
 			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "MEMBER", bank_in)
-		case "BONUS":
-			tipeakun_dpwd = "OUT"
-			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "AGEN", bank_out)
-			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "MEMBER", bank_in)
-			tipeakun_dpwd = "OUT"
 		}
 		amount_db := amount / multiplier
 
@@ -162,50 +197,15 @@ func Save_transdpwd(admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, 
 
 		flag_insert, msg_insert := Exec_SQL(sql_insert, tbl_trx_dpwd, "INSERT",
 			iddpwd, idmasteragen, idmaster,
-			tglnow.Format("YYYY-MM"), tglnow.Format("YYYY-MM-DD"), idcurr, "A", tipedoc, tipeakun_dpwd, idmember,
+			tglnow.Format("YYYY-MM"), tglnow.Format("YYYY-MM-DD"), idcurr, "C", tipedoc, tipeakun_dpwd, idmember,
 			bank_in, temp_bank_in, bank_out, temp_bank_out,
-			multiplier, amount, amount_db, before, after, status, note_dpwd,
-			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
+			multiplier, amount, amount_db, before, after, "PROCESS",
+			idmember, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {
 			msg = "Succes"
 		} else {
 			fmt.Println(msg_insert)
-		}
-	} else {
-		sql_update := `
-				UPDATE 
-				` + tbl_trx_dpwd + `  
-				SET tipedoc_dpwd=$1, tipeakun_dpwd=$2,   
-				idagenmember=$3, bank_int=$4, bank_out=$5, note_bank=$6,      
-				amount_dpwd=$7, before_dpwd=$8, after_dpwd=$9, status_dpwd=$10, note_dpwd=$11,     
-				update_dpwd=$12, updatedate_dpwd=$13     
-				WHERE iddpwd=$14  AND idmasteragen=$15  
-			`
-
-		tipeakun_dpwd := ""
-		note_bank := "FROM: BANK OUT - TO: BANK IN"
-		switch tipedoc {
-		case "DEPOSIT":
-			tipeakun_dpwd = "IN"
-		case "WITHDRAW":
-			tipeakun_dpwd = "OUT"
-		case "BONUS":
-			tipeakun_dpwd = "OUT"
-		}
-		before := 0
-		after := 0
-
-		flag_update, msg_update := Exec_SQL(sql_update, tbl_trx_dpwd, "UPDATE",
-			tipedoc, tipeakun_dpwd,
-			idmember, bank_in, bank_out, note_bank,
-			amount, before, after, status, note_dpwd,
-			admin, tglnow.Format("YYYY-MM-DD HH:mm:ss"), idrecord)
-
-		if flag_update {
-			msg = "Succes"
-		} else {
-			fmt.Println(msg_update)
 		}
 	}
 

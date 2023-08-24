@@ -5,19 +5,11 @@ type Model_transdpwd struct {
 	Transdpwd_date          string  `json:"transdpwd_date"`
 	Transdpwd_idcurr        string  `json:"transdpwd_idcurr"`
 	Transdpwd_tipedoc       string  `json:"transdpwd_tipedoc"`
-	Transdpwd_tipeuserdoc   string  `json:"transdpwd_tipeuserdoc"`
-	Transdpwd_tipeakun      string  `json:"transdpwd_tipeakun"`
-	Transdpwd_idmember      string  `json:"transdpwd_idmember"`
-	Transdpwd_nmmember      string  `json:"transdpwd_nmmember"`
 	Transdpwd_bank_in       int     `json:"transdpwd_bank_in"`
 	Transdpwd_bank_out      int     `json:"transdpwd_bank_out"`
 	Transdpwd_bank_in_info  string  `json:"transdpwd_bank_in_info"`
 	Transdpwd_bank_out_info string  `json:"transdpwd_bank_out_info"`
 	Transdpwd_amount        float64 `json:"transdpwd_amount"`
-	Transdpwd_before        float64 `json:"transdpwd_before"`
-	Transdpwd_after         float64 `json:"transdpwd_after"`
-	Transdpwd_ipaddress     string  `json:"transdpwd_ipaddress"`
-	Transdpwd_timezone      string  `json:"transdpwd_timezone"`
 	Transdpwd_note          string  `json:"transdpwd_note"`
 	Transdpwd_status        string  `json:"transdpwd_status"`
 	Transdpwd_status_css    string  `json:"transdpwd_status_css"`

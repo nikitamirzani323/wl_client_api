@@ -40,7 +40,7 @@ func CheckLogin(c *fiber.Ctx) error {
 		})
 	}
 	//idmasteragen, username, password, ipaddress, timezone string
-	result, idmasteragen, idmember, err := models.Login_Model(client.Idmasteragen, client.Username, client.Password, client.Ipaddress, client.Timezone)
+	result, idmaster, idmasteragen, idmember, err := models.Login_Model(client.Idmasteragen, client.Username, client.Password, client.Ipaddress, client.Timezone)
 
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -59,7 +59,7 @@ func CheckLogin(c *fiber.Ctx) error {
 			})
 
 	} else {
-		dataclient := idmasteragen + "==" + idmember
+		dataclient := idmaster + "=" + idmasteragen + "==" + idmember
 		dataclient_encr, keymap := helpers.Encryption(dataclient)
 		dataclient_encr_final := dataclient_encr + "|" + strconv.Itoa(keymap)
 		t, err := helpers.GenerateNewAccessToken(dataclient_encr_final)
@@ -91,7 +91,8 @@ func Home(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	fmt.Println("KEY:", temp_decp)
 
-	client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmaster, client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
+	fmt.Println("IDMASTER:", client_idmaster)
 	fmt.Println("IDMASTER_AGEN:", client_idmasteragen)
 	fmt.Println("IDMEMBER:", client_idmember)
 	fmt.Println(client.Page)

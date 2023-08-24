@@ -13,39 +13,39 @@ import (
 	"github.com/nikitamirzani323/wl_agen_backend_api/models"
 )
 
-const Fieldtransdpwd_home_redis = "LISTTRANSDPWD_AGEN"
+const Fieldtransdpwd_home_redis = "LISTTRANSDPWD_CLIENT"
 
 func Transdpwdhome(c *fiber.Ctx) error {
 	user := c.Locals("jwt").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	_, client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
 
 	var obj entities.Model_transdpwd
 	var arraobj []entities.Model_transdpwd
+	//BANK MEMBER
+	var objbank entities.Model_memberbank
+	var arraobjbank []entities.Model_memberbank
+	//BANK AGEN
+	var objagenbank entities.Model_agenbankshare
+	var arraobjagenbank []entities.Model_agenbankshare
 	render_page := time.Now()
-	resultredis, flag := helpers.GetRedis(Fieldtransdpwd_home_redis + "_" + client_idmasteragen)
+	resultredis, flag := helpers.GetRedis(Fieldtransdpwd_home_redis + "_" + client_idmasteragen + "_" + client_idmember)
 	jsonredis := []byte(resultredis)
+	listbankmember_RD, _, _, _ := jsonparser.Get(jsonredis, "listbankmember")
+	listbankagen_RD, _, _, _ := jsonparser.Get(jsonredis, "listbankagen")
 	record_RD, _, _, _ := jsonparser.Get(jsonredis, "record")
 	jsonparser.ArrayEach(record_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		transdpwd_id, _ := jsonparser.GetString(value, "transdpwd_id")
 		transdpwd_date, _ := jsonparser.GetString(value, "transdpwd_date")
 		transdpwd_idcurr, _ := jsonparser.GetString(value, "transdpwd_idcurr")
-		transdpwd_tipeuserdoc, _ := jsonparser.GetString(value, "transdpwd_tipeuserdoc")
 		transdpwd_tipedoc, _ := jsonparser.GetString(value, "transdpwd_tipedoc")
-		transdpwd_tipeakun, _ := jsonparser.GetString(value, "transdpwd_tipeakun")
-		transdpwd_idmember, _ := jsonparser.GetString(value, "transdpwd_idmember")
-		transdpwd_nmmember, _ := jsonparser.GetString(value, "transdpwd_nmmember")
 		transdpwd_bank_in, _ := jsonparser.GetInt(value, "transdpwd_bank_in")
 		transdpwd_bank_out, _ := jsonparser.GetInt(value, "transdpwd_bank_out")
 		transdpwd_bank_in_info, _ := jsonparser.GetString(value, "transdpwd_bank_in_info")
 		transdpwd_bank_out_info, _ := jsonparser.GetString(value, "transdpwd_bank_out_info")
 		transdpwd_amount, _ := jsonparser.GetFloat(value, "transdpwd_amount")
-		transdpwd_before, _ := jsonparser.GetFloat(value, "transdpwd_before")
-		transdpwd_after, _ := jsonparser.GetFloat(value, "transdpwd_after")
-		transdpwd_ipaddress, _ := jsonparser.GetString(value, "transdpwd_ipaddress")
-		transdpwd_timezone, _ := jsonparser.GetString(value, "transdpwd_timezone")
 		transdpwd_note, _ := jsonparser.GetString(value, "transdpwd_note")
 		transdpwd_status, _ := jsonparser.GetString(value, "transdpwd_status")
 		transdpwd_status_css, _ := jsonparser.GetString(value, "transdpwd_status_css")
@@ -56,19 +56,11 @@ func Transdpwdhome(c *fiber.Ctx) error {
 		obj.Transdpwd_date = transdpwd_date
 		obj.Transdpwd_idcurr = transdpwd_idcurr
 		obj.Transdpwd_tipedoc = transdpwd_tipedoc
-		obj.Transdpwd_tipeuserdoc = transdpwd_tipeuserdoc
-		obj.Transdpwd_tipeakun = transdpwd_tipeakun
-		obj.Transdpwd_idmember = transdpwd_idmember
-		obj.Transdpwd_nmmember = transdpwd_nmmember
 		obj.Transdpwd_bank_in = int(transdpwd_bank_in)
 		obj.Transdpwd_bank_out = int(transdpwd_bank_out)
 		obj.Transdpwd_bank_in_info = transdpwd_bank_in_info
 		obj.Transdpwd_bank_out_info = transdpwd_bank_out_info
 		obj.Transdpwd_amount = float64(transdpwd_amount)
-		obj.Transdpwd_before = float64(transdpwd_before)
-		obj.Transdpwd_after = float64(transdpwd_after)
-		obj.Transdpwd_ipaddress = transdpwd_ipaddress
-		obj.Transdpwd_timezone = transdpwd_timezone
 		obj.Transdpwd_note = transdpwd_note
 		obj.Transdpwd_status = transdpwd_status
 		obj.Transdpwd_status_css = transdpwd_status_css
@@ -76,9 +68,28 @@ func Transdpwdhome(c *fiber.Ctx) error {
 		obj.Transdpwd_update = transdpwd_update
 		arraobj = append(arraobj, obj)
 	})
+	jsonparser.ArrayEach(listbankmember_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		memberbank_id, _ := jsonparser.GetInt(value, "memberbank_id")
+		memberbank_idbanktype, _ := jsonparser.GetString(value, "memberbank_idbanktype")
+		memberbank_norek, _ := jsonparser.GetString(value, "memberbank_norek")
+		memberbank_nmownerbank, _ := jsonparser.GetString(value, "memberbank_nmownerbank")
 
+		objbank.Memberbank_id = int(memberbank_id)
+		objbank.Memberbank_idbanktype = memberbank_idbanktype
+		objbank.Memberbank_norek = memberbank_norek
+		objbank.Memberbank_nmownerbank = memberbank_nmownerbank
+		arraobjbank = append(arraobjbank, objbank)
+	})
+	jsonparser.ArrayEach(listbankagen_RD, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		agenbank_id, _ := jsonparser.GetInt(value, "agenbank_id")
+		agenbank_info, _ := jsonparser.GetString(value, "agenbank_info")
+
+		objagenbank.Agenbank_id = int(agenbank_id)
+		objagenbank.Agenbank_info = agenbank_info
+		arraobjagenbank = append(arraobjagenbank, objagenbank)
+	})
 	if !flag {
-		result, err := models.Fetch_transdpwdHome(client_idmasteragen)
+		result, err := models.Fetch_transdpwdHome(client_idmasteragen, client_idmember)
 		if err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return c.JSON(fiber.Map{
@@ -87,16 +98,18 @@ func Transdpwdhome(c *fiber.Ctx) error {
 				"record":  nil,
 			})
 		}
-		helpers.SetRedis(Fieldtransdpwd_home_redis+"_"+client_idmasteragen, result, 60*time.Minute)
-		fmt.Println("TRANSDPWD AGEN MYSQL")
+		helpers.SetRedis(Fieldtransdpwd_home_redis+"_"+client_idmasteragen+"_"+client_idmember, result, 60*time.Minute)
+		fmt.Println("TRANSDPWD CLIENT MYSQL")
 		return c.JSON(result)
 	} else {
-		fmt.Println("TRANSDPWD AGEN CACHE")
+		fmt.Println("TRANSDPWD CLIENT CACHE")
 		return c.JSON(fiber.Map{
-			"status":  fiber.StatusOK,
-			"message": "Success",
-			"record":  arraobj,
-			"time":    time.Since(render_page).String(),
+			"status":         fiber.StatusOK,
+			"message":        "Success",
+			"record":         arraobj,
+			"listbankmember": arraobjbank,
+			"listbankagen":   arraobjagenbank,
+			"time":           time.Since(render_page).String(),
 		})
 	}
 }
@@ -132,13 +145,12 @@ func TransdpwdSave(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
-	client_idmasteragen, _ := helpers.Parsing_Decry(temp_decp, "==")
+	client_idmaster, client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
 
-	// admin, idrecord, idmasteragen, idmaster, tipedoc, idmember, note_dpwd, status, sData string, bank_in, bank_out int, amount float32
+	// idmember, idrecord, idmasteragen, idmaster, tipedoc,  sData string, bank_in, bank_out int, amount float32
 	result, err := models.Save_transdpwd(
-		client_idmasteragen,
-		client.Transdpwd_id, client_idmasteragen, client_idmasteragen, client.Transdpwd_tipedoc, client.Transdpwd_idmember,
-		client.Transdpwd_note, client.Transdpwd_status,
+		client_idmember,
+		client.Transdpwd_id, client_idmasteragen, client_idmaster, client.Transdpwd_tipedoc,
 		client.Sdata, client.Transdpwd_bank_in, client.Transdpwd_bank_out, client.Transdpwd_amount)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
@@ -149,11 +161,11 @@ func TransdpwdSave(c *fiber.Ctx) error {
 		})
 	}
 
-	_deleteredis_transdpwd(client_idmasteragen)
+	_deleteredis_transdpwd(client_idmasteragen, client_idmember)
 	return c.JSON(result)
 }
-func _deleteredis_transdpwd(idmasteragen string) {
-	val_master := helpers.DeleteRedis(Fieldtransdpwd_home_redis + "_" + idmasteragen)
+func _deleteredis_transdpwd(idmasteragen, idmember string) {
+	val_master := helpers.DeleteRedis(Fieldtransdpwd_home_redis + "_" + idmasteragen + "_" + idmember)
 	fmt.Printf("Redis Delete AGEN TRANSAKSI DEPO WD : %d", val_master)
 
 }
