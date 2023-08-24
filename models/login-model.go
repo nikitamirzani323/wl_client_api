@@ -29,7 +29,7 @@ func Login_Model(idmasteragen, username, password, ipaddress, timezone string) (
 		`
 
 	row := con.QueryRowContext(ctx, sql_select, username, idmasteragen)
-	switch e := row.Scan(&idmaster_db, &idagenmember_DB, &password_agenmember_DB); e {
+	switch e := row.Scan(&idagenmember_DB, &idmaster_db, &password_agenmember_DB); e {
 	case sql.ErrNoRows:
 		return false, "", "", "", errors.New("Username and Password Not Found")
 	case nil:
