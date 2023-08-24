@@ -59,7 +59,7 @@ func CheckLogin(c *fiber.Ctx) error {
 			})
 
 	} else {
-		dataclient := idmaster + "=" + idmasteragen + "==" + idmember
+		dataclient := idmaster + "==" + idmasteragen + "==" + idmember
 		dataclient_encr, keymap := helpers.Encryption(dataclient)
 		dataclient_encr_final := dataclient_encr + "|" + strconv.Itoa(keymap)
 		t, err := helpers.GenerateNewAccessToken(dataclient_encr_final)

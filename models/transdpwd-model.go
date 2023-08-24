@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -23,7 +24,8 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 	con := db.CreateCon()
 	ctx := context.Background()
 	start := time.Now()
-
+	log.Println(idmasteragen)
+	log.Println(idmember)
 	tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
 	sql_select := `SELECT 
 			iddpwd , date_dpwd, idcurr,  
@@ -36,8 +38,9 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 			WHERE idmasteragen=$1 
 			AND idagenmember=$2 
 			ORDER BY createdate_dpwd DESC  LIMIT 100 `
-
-	row, err := con.QueryContext(ctx, sql_select)
+	log.Println(idmasteragen)
+	log.Println(idmember)
+	row, err := con.QueryContext(ctx, sql_select, idmasteragen, idmember)
 	helpers.ErrorCheck(err)
 	for row.Next() {
 		var (
@@ -147,7 +150,7 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 
 	return res, nil
 }
-func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
+func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, note, ipaddress, timezone, sData string, bank_in, bank_out int, amount float32) (helpers.Response, error) {
 	var res helpers.Response
 	msg := "Failed"
 	tglnow, _ := goment.New()
@@ -167,13 +170,15 @@ func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, sData s
 					yearmonth_dpwd , date_dpwd, idcurr, tipedocuser_dpwd, tipedoc_dpwd, tipeakun_dpwd, idagenmember, 
 					bank_in, bank_in_info , bank_out, bank_out_info, 
 					multiplier_dpwd, amountdefault_dpwd, amount_dpwd, before_dpwd, after_dpwd, status_dpwd, 
+					note_dpwd, ipaddress_dpwd, timezone_dpwd, 
 					create_dpwd, createdate_dpwd  
 				) values (
 					$1, $2, $3,   
 					$4, $5, $6, $7, $8, $9, $10,    
 					$11, $12, $13, $14,     
 					$15, $16, $17, $18, $19, $20,       
-					$21, $22
+					$21, $22, $23,     
+					$24, $25 
 				)
 			`
 		tipeakun_dpwd := ""
@@ -200,6 +205,7 @@ func Save_transdpwd(idmember, idrecord, idmasteragen, idmaster, tipedoc, sData s
 			tglnow.Format("YYYY-MM"), tglnow.Format("YYYY-MM-DD"), idcurr, "C", tipedoc, tipeakun_dpwd, idmember,
 			bank_in, temp_bank_in, bank_out, temp_bank_out,
 			multiplier, amount, amount_db, before, after, "PROCESS",
+			note, ipaddress, timezone,
 			idmember, tglnow.Format("YYYY-MM-DD HH:mm:ss"))
 
 		if flag_insert {

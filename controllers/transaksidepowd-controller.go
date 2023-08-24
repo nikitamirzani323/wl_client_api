@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/buger/jsonparser"
@@ -20,7 +21,11 @@ func Transdpwdhome(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
 	temp_decp := helpers.Decryption(name)
+	log.Println(user)
 	_, client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
+
+	log.Println(client_idmasteragen)
+	log.Println(client_idmember)
 
 	var obj entities.Model_transdpwd
 	var arraobj []entities.Model_transdpwd
@@ -147,10 +152,11 @@ func TransdpwdSave(c *fiber.Ctx) error {
 	temp_decp := helpers.Decryption(name)
 	client_idmaster, client_idmasteragen, client_idmember := helpers.Parsing_Decry(temp_decp, "==")
 
-	// idmember, idrecord, idmasteragen, idmaster, tipedoc,  sData string, bank_in, bank_out int, amount float32
+	// idmember, idrecord, idmasteragen, idmaster, tipedoc, note, ipaddress, timezone, sData string, bank_in, bank_out int, amount float32
 	result, err := models.Save_transdpwd(
 		client_idmember,
 		client.Transdpwd_id, client_idmasteragen, client_idmaster, client.Transdpwd_tipedoc,
+		client.Transdpwd_note, client.Transdpwd_ipaddress, client.Transdpwd_timezone,
 		client.Sdata, client.Transdpwd_bank_in, client.Transdpwd_bank_out, client.Transdpwd_amount)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
