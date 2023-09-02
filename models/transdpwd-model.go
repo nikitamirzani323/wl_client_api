@@ -26,7 +26,7 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 	start := time.Now()
 	log.Println(idmasteragen)
 	log.Println(idmember)
-	_, _, tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
+	_, tbl_mst_member_bank, tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
 	sql_select := `SELECT 
 			iddpwd , date_dpwd, idcurr,  
 			tipedoc_dpwd ,  
@@ -97,23 +97,23 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 	var objbank entities.Model_memberbank
 	var arraobjbank []entities.Model_memberbank
 	sql_selectbank := `SELECT 
-		idagenmemberbank,idbanktype, norekbank_agenmemberbank, nmownerbank_agenmemberbank 
-		FROM ` + configs.DB_tbl_mst_master_agen_member_bank + ` 
-		WHERE idagenmember = $1   
+		idmemberbank,idbanktype, norekbank_memberbank, nmownerbank_memberbank 
+		FROM ` + tbl_mst_member_bank + ` 
+		WHERE idmember = $1   
 	`
 	row_bank, err_bank := con.QueryContext(ctx, sql_selectbank, idmember)
 	helpers.ErrorCheck(err_bank)
 	for row_bank.Next() {
 		var (
-			idagenmemberbank_db                                                       int
-			idbanktype_db, norekbank_agenmemberbank_db, nmownerbank_agenmemberbank_db string
+			idmemberbank_db                                                   int
+			idbanktype_db, norekbank_memberbank_db, nmownerbank_memberbank_db string
 		)
-		err_bank = row_bank.Scan(&idagenmemberbank_db, &idbanktype_db, &norekbank_agenmemberbank_db, &nmownerbank_agenmemberbank_db)
+		err_bank = row_bank.Scan(&idmemberbank_db, &idbanktype_db, &norekbank_memberbank_db, &nmownerbank_memberbank_db)
 
-		objbank.Memberbank_id = idagenmemberbank_db
+		objbank.Memberbank_id = idmemberbank_db
 		objbank.Memberbank_idbanktype = idbanktype_db
-		objbank.Memberbank_nmownerbank = nmownerbank_agenmemberbank_db
-		objbank.Memberbank_norek = norekbank_agenmemberbank_db
+		objbank.Memberbank_nmownerbank = norekbank_memberbank_db
+		objbank.Memberbank_norek = nmownerbank_memberbank_db
 		arraobjbank = append(arraobjbank, objbank)
 	}
 	defer row_bank.Close()
