@@ -26,7 +26,7 @@ func Fetch_transdpwdHome(idmasteragen, idmember string) (helpers.ResponseTransak
 	start := time.Now()
 	log.Println(idmasteragen)
 	log.Println(idmember)
-	tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
+	_, _, tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
 	sql_select := `SELECT 
 			iddpwd , date_dpwd, idcurr,  
 			tipedoc_dpwd ,  
@@ -155,7 +155,7 @@ func Save_transdpwd(idmember, idmasteragen, idmaster, tipedoc, note, ipaddress, 
 	msg := "Failed"
 	tglnow, _ := goment.New()
 	render_page := time.Now()
-	tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
+	_, tbl_mst_member_bank, tbl_trx_dpwd, _ := Get_mappingdatabase(idmasteragen)
 
 	idcurr := _GetDefaultCurr(idmasteragen)
 	multiplier := _GetMultiplier(idcurr)
@@ -187,12 +187,12 @@ func Save_transdpwd(idmember, idmasteragen, idmaster, tipedoc, note, ipaddress, 
 		switch tipedoc {
 		case "DEPOSIT":
 			tipeakun_dpwd = "IN"
-			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "MEMBER", bank_out)
-			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "AGEN", bank_in)
+			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "MEMBER", tbl_mst_member_bank, bank_out)
+			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "AGEN", tbl_mst_member_bank, bank_in)
 		case "WITHDRAW":
 			tipeakun_dpwd = "OUT"
-			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "AGEN", bank_out)
-			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "MEMBER", bank_in)
+			temp_bank_out = _GetInfoBank(idmasteragen, idmember, "AGEN", tbl_mst_member_bank, bank_out)
+			temp_bank_in = _GetInfoBank(idmasteragen, idmember, "MEMBER", tbl_mst_member_bank, bank_in)
 		}
 		amount_db := amount / multiplier
 
@@ -261,7 +261,7 @@ func _GetMultiplier(idrecord string) float32 {
 	}
 	return float32(multipliercurr)
 }
-func _GetInfoBank(idmasteragen, idagenmember, tipe string, idrecord int) string {
+func _GetInfoBank(idmasteragen, idagenmember, tipe, table string, idrecord int) string {
 	con := db.CreateCon()
 	ctx := context.Background()
 	info := ""
@@ -277,9 +277,9 @@ func _GetInfoBank(idmasteragen, idagenmember, tipe string, idrecord int) string 
 		`
 	} else {
 		sql_select = `SELECT
-			idbanktype, norekbank_agenmemberbank, nmownerbank_agenmemberbank   
-			FROM ` + configs.DB_tbl_mst_master_agen_member_bank + `  
-			WHERE idagenmemberbank=` + strconv.Itoa(idrecord) + ` AND idagenmember='` + idagenmember + `'    
+			idbanktype, norekbank_memberbank, nmownerbank_memberbank   
+			FROM ` + table + `  
+			WHERE idmemberbank=` + strconv.Itoa(idrecord) + ` AND idmember='` + idagenmember + `'    
 		`
 	}
 
@@ -293,23 +293,23 @@ func _GetInfoBank(idmasteragen, idagenmember, tipe string, idrecord int) string 
 	info = bank_id + "-" + bank_norek + "-" + bank_nmrek
 	return info
 }
-func _GetInfoMember(idmasteragen, idagenmember string) string {
+func _GetInfoMember(idmasteragen, idmember, table string) string {
 	con := db.CreateCon()
 	ctx := context.Background()
-	username_agenmember_db := ""
-	name_agenmember_db := ""
+	username_member_db := ""
+	name_member_db := ""
 
 	sql_select := `SELECT
-		username_agenmember, name_agenmember   
-		FROM ` + configs.DB_tbl_mst_master_agen_member + `  
-		WHERE idagenmember=$1 AND idmasteragen=$2
+		username_member, name_member   
+		FROM ` + table + `  
+		WHERE idmember=$1 AND idmasteragen=$2
 	`
-	row := con.QueryRowContext(ctx, sql_select, idagenmember, idmasteragen)
-	switch e := row.Scan(&username_agenmember_db, &name_agenmember_db); e {
+	row := con.QueryRowContext(ctx, sql_select, idmember, idmasteragen)
+	switch e := row.Scan(&username_member_db, &name_member_db); e {
 	case sql.ErrNoRows:
 	case nil:
 	default:
 		helpers.ErrorCheck(e)
 	}
-	return username_agenmember_db + "-" + name_agenmember_db
+	return username_member_db + "-" + name_member_db
 }
